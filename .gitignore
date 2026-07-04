@@ -1,0 +1,19 @@
+# Certificados e chaves — NUNCA versionar
+*.key
+*.pem
+*.crt
+*.csr
+*.p12
+*.srl
+pki/
+
+# Saidas transitorias de teste
+latencias_etapa1.csv
+recursos_pi.csv
+resultados/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

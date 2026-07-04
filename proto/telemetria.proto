@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package telemetria;
+
+// Uma amostra de telemetria OBD-II (mesmos campos do CSV de exemplo).
+// Quando o CSV REAL do Alessandro chegar, ajuste os campos aqui e recompile
+// (bash compilar_proto.sh). E so isso que muda entre exemplo e dado real.
+message Amostra {
+  string timestamp      = 1;
+  double velocidade     = 2;
+  double rpm            = 3;
+  double temp_motor     = 4;
+  double carga_motor    = 5;
+  double acelerador     = 6;
+  double tensao_bateria = 7;
+  double lat            = 8;
+  double lon            = 9;
+}
+
+message Confirmacao {
+  bool  ok    = 1;
+  int32 total = 2;
+}
+
+service Telemetria {
+  rpc Enviar(Amostra) returns (Confirmacao);
+}
