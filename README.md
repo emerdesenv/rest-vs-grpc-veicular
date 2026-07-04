@@ -53,10 +53,10 @@ Este repositório contém o código, os *schemas* e os dados do benchmark que qu
 
 O experimento é construído em fatias verificáveis — cada etapa valida uma variável antes de somar a próxima.
 
-- [x] **Etapa 1 — Esqueleto** · REST + coleta de CPU/RAM ponta a ponta *(código pronto; validação em hardware em andamento)*
-- [x] **Etapa 2 — gRPC** · segundo protocolo, mesma telemetria em formato binário *(código pronto; validar após a Etapa 1)*
-- [ ] **Etapa 3 — Segurança** · TLS e mTLS (com medição isolada do handshake — RQ2)
-- [ ] **Etapa 4 — Rede** · perfis 3G/4G/LTE via `tc netem`
+- [x] **Etapa 1 — Esqueleto** · REST + coleta de CPU/RAM ponta a ponta *(validado em hardware real)*
+- [x] **Etapa 2 — gRPC** · segundo protocolo, mesma telemetria em formato binário *(validado em hardware real)*
+- [x] **Etapa 3 — Segurança** · TLS e mTLS (com medição isolada do handshake — RQ2) *(validado em hardware real)*
+- [x] **Etapa 4 — Rede** · perfis 3G/4G/LTE via `tc netem` *(código pronto; validar no Pi)*
 - [ ] **Etapa 5 — Ataques L7** · JSON Bomb, pacote malformado e pior caso combinado (C3/C4/C5)
 - [ ] **Etapa 6 — Matriz** · orquestrador das combinações (protocolo × segurança × rede × payload), 5 rodadas
 - [ ] **Etapa 7 — Estatística** · SciPy (Shapiro-Wilk · Mann-Whitney U · Bonferroni) e geração de tabelas/gráficos
@@ -77,6 +77,9 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 │   └── compilar_proto.sh
 ├── pki-scripts/              # geração da PKI para mTLS (sem certificados reais)
 │   └── gerar_pki.sh
+├── netem/                    # perfis de rede movel (3G/4G/LTE) via tc netem
+│   ├── aplicar_perfil.sh
+│   └── remover_perfil.sh
 ├── data/                     # telemetria de exemplo + coletor OBD-II
 │   ├── exemplo_telemetria.csv
 │   └── coletar_obd.py
@@ -88,7 +91,7 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 └── README.md
 ```
 
-Pastas futuras: `netem/` (perfis de rede), `analise/` (estatística).
+Pasta futura: `analise/` (estatística).
 
 ## Documentação
 

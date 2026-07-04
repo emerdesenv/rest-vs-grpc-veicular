@@ -9,7 +9,13 @@ pki/
 
 # Saidas transitorias de teste
 latencias_etapa1.csv
+latencias_grpc_etapa2.csv
+latencias_etapa3_*.csv
+latencias_grpc_etapa3_*.csv
+handshake_*.csv
 recursos_pi.csv
+recursos_pi_grpc.csv
+recursos_pi_*.csv
 resultados/
 
 # Python
@@ -17,3 +23,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Gerado pelo proto/compilar_proto.sh - regenere a partir do .proto, nao versionar
+telemetria_pb2.py
+telemetria_pb2_grpc.py

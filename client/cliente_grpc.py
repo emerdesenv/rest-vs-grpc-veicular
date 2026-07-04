@@ -1,5 +1,5 @@
 """
-Cliente de carga gRPC - ETAPA 2.
+Cliente de carga gRPC - ETAPA 2/3.
 Roda NO NOTEBOOK. Le o CSV e envia cada linha via gRPC, medindo latencia.
 
 ANTES de rodar: compile o .proto (proto/compilar_proto.sh) - isso ja coloca
@@ -8,9 +8,11 @@ telemetria_pb2.py e telemetria_pb2_grpc.py nesta pasta.
 Executar (de qualquer diretorio):
     python3 cliente_grpc.py 192.168.50.1
     python3 cliente_grpc.py 192.168.50.1 ../data/telemetria_real.csv
-(2o argumento e opcional - caminho do CSV; sem ele usa exemplo_telemetria.csv)
+    python3 cliente_grpc.py 192.168.50.1 --seguranca tls
+    python3 cliente_grpc.py 192.168.50.1 --seguranca mtls --pki ../pki-scripts/pki
+(2o argumento posicional e opcional - caminho do CSV; sem ele usa exemplo_telemetria.csv)
 """
-import sys
+import argparse
 import csv
 import time
 import statistics
@@ -19,13 +21,16 @@ import grpc
 import telemetria_pb2
 import telemetria_pb2_grpc
 
-IP = sys.argv[1] if len(sys.argv) > 1 else "192.168.50.1"
-# Caminho padrao resolvido a partir da localizacao deste arquivo, nao do
-# diretorio de onde o script e chamado (ver mesma nota em cliente_carga.py).
 _PADRAO_CSV = Path(__file__).resolve().parent.parent / "data" / "exemplo_telemetria.csv"
-ARQUIVO_CSV = sys.argv[2] if len(sys.argv) > 2 else str(_PADRAO_CSV)
+_PADRAO_PKI = Path(__file__).resolve().parent.parent / "pki-scripts" / "pki"
 N_REQUISICOES = 1000  # Tabela 5 do artigo (cenario C1)
 WARMUP = 100          # Tabela 5 do artigo (cenario C1)
+
+NOME_SAIDA = {
+    "none": "latencias_grpc_etapa2.csv",
+    "tls": "latencias_grpc_etapa3_tls.csv",
+    "mtls": "latencias_grpc_etapa3_mtls.csv",
+}
 
 
 def num(x):
@@ -35,20 +40,62 @@ def num(x):
         return 0.0
 
 
+def montar_canal(ip: str, seguranca: str, pki: Path):
+    alvo = f"{ip}:50051"
+    if seguranca == "none":
+        return grpc.insecure_channel(alvo)
+
+    ca_crt = pki / "ca.crt"
+    if not ca_crt.exists():
+        raise FileNotFoundError(f"ca.crt nao encontrado em {pki}")
+
+    if seguranca == "tls":
+        credenciais = grpc.ssl_channel_credentials(root_certificates=ca_crt.read_bytes())
+        return grpc.secure_channel(alvo, credenciais)
+
+    # mtls
+    client_crt = pki / "client.crt"
+    client_key = pki / "client.key"
+    if not client_crt.exists() or not client_key.exists():
+        raise FileNotFoundError(f"client.crt/client.key nao encontrados em {pki}")
+    credenciais = grpc.ssl_channel_credentials(
+        root_certificates=ca_crt.read_bytes(),
+        private_key=client_key.read_bytes(),
+        certificate_chain=client_crt.read_bytes(),
+    )
+    return grpc.secure_channel(alvo, credenciais)
+
+
 def main():
+    parser = argparse.ArgumentParser(description="Cliente de carga gRPC")
+    parser.add_argument("ip", nargs="?", default="192.168.50.1", help="IP do Raspberry Pi")
+    parser.add_argument("csv_path", nargs="?", default=None, help="Caminho do CSV de telemetria")
+    parser.add_argument("--seguranca", choices=["none", "tls", "mtls"], default="none")
+    parser.add_argument("--pki", default=None, help="Pasta com os certificados")
+    args = parser.parse_args()
+
+    arquivo_csv = args.csv_path or str(_PADRAO_CSV)
+    pki_dir = Path(args.pki) if args.pki else _PADRAO_PKI
+
     try:
-        with open(ARQUIVO_CSV, newline="", encoding="utf-8") as f:
+        with open(arquivo_csv, newline="", encoding="utf-8") as f:
             linhas = list(csv.DictReader(f))
     except FileNotFoundError:
-        print(f"CSV nao encontrado em: {ARQUIVO_CSV}")
+        print(f"CSV nao encontrado em: {arquivo_csv}")
         print("Passe o caminho como 2o argumento: python3 cliente_grpc.py <IP> <caminho_csv>")
         return
     if not linhas:
-        print(f"CSV vazio. Verifique o arquivo em {ARQUIVO_CSV}")
+        print(f"CSV vazio. Verifique o arquivo em {arquivo_csv}")
         return
 
-    print(f">> Enviando {N_REQUISICOES} requisicoes gRPC para {IP}:50051")
-    canal = grpc.insecure_channel(f"{IP}:50051")
+    try:
+        canal = montar_canal(args.ip, args.seguranca, pki_dir)
+    except FileNotFoundError as e:
+        print(e)
+        print("Gere a PKI primeiro: bash pki-scripts/gerar_pki.sh")
+        return
+
+    print(f">> Enviando {N_REQUISICOES} requisicoes gRPC para {args.ip}:50051 [seguranca={args.seguranca}]")
     stub = telemetria_pb2_grpc.TelemetriaStub(canal)
     latencias = []
     for i in range(N_REQUISICOES):
@@ -84,12 +131,13 @@ def main():
     print(f"  P50: {statistics.median(latencias):.2f} ms")
     print(f"  P95: {latencias[int(len(latencias) * 0.95) - 1]:.2f} ms")
     print(f"  P99: {latencias[int(len(latencias) * 0.99) - 1]:.2f} ms")
-    with open("latencias_grpc_etapa2.csv", "w", newline="") as f:
+    nome_saida = NOME_SAIDA[args.seguranca]
+    with open(nome_saida, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["indice", "latencia_ms"])
         for i, v in enumerate(latencias):
             w.writerow([i, f"{v:.3f}"])
-    print("  salvo em latencias_grpc_etapa2.csv")
+    print(f"  salvo em {nome_saida}")
 
 
 if __name__ == "__main__":

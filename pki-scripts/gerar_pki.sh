@@ -26,7 +26,14 @@ openssl req -newkey rsa:2048 -sha256 -nodes \
 # Arquivo temporario em vez de "process substitution" (<(...)) - a sintaxe
 # <(...) nao funciona de forma confiavel no Git Bash/MSYS no Windows; um
 # arquivo temporario funciona igual em Linux, Mac e Windows.
-printf "subjectAltName=IP:%s" "$IP_SERVIDOR" > server_ext.cnf
+#
+# keyUsage/extendedKeyUsage sao obrigatorios aqui: sem eles, OpenSSL mais
+# novo (3.5+, ex. no Raspberry Pi) rejeita silenciosamente o certificado
+# na verificacao mTLS (handshake completa do lado do cliente, mas o
+# servidor derruba a conexao sem log nenhum) - descoberto testando contra
+# o Pi com OpenSSL 3.5.6 enquanto o notebook (OpenSSL 3.0.13) aceitava sem
+# reclamar. Sao a extensao "certa" de qualquer forma, nao so um workaround.
+printf "subjectAltName=IP:%s\nkeyUsage=digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth" "$IP_SERVIDOR" > server_ext.cnf
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
   -days 365 -sha256 -out server.crt -extfile server_ext.cnf
 rm -f server_ext.cnf
@@ -34,8 +41,10 @@ rm -f server_ext.cnf
 echo ">> [3/3] Gerando o certificado do CLIENTE (notebook)..."
 openssl req -newkey rsa:2048 -sha256 -nodes \
   -keyout client.key -out client.csr -subj "/CN=gateway-client"
+printf "keyUsage=digitalSignature\nextendedKeyUsage=clientAuth" > client_ext.cnf
 openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
-  -days 365 -sha256 -out client.crt
+  -days 365 -sha256 -out client.crt -extfile client_ext.cnf
+rm -f client_ext.cnf
 
 rm -f server.csr client.csr ca.srl
 echo ""

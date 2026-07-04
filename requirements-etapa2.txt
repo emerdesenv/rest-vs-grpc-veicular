@@ -1,8 +1,11 @@
 # Etapa 2 (gRPC). Instalar nas DUAS maquinas:  pip install -r requirements-etapa2.txt
 #
-# ATENCAO no Raspberry Pi: o 'grpcio' pode demorar bastante para instalar
-# (as vezes 10-20 min) se ele precisar compilar do zero. Tenha paciencia e
-# NAO cancele. Se demorar demais ou falhar, tente:
+# ATENCAO no Raspberry Pi: se a versao abaixo nao tiver wheel pronto pra
+# versao de Python/SO de voces (o pip vai tentar compilar do zero, e pode
+# falhar com "No module named 'pkg_resources'" em Python 3.13+), rode:
 #     pip install grpcio grpcio-tools --prefer-binary
-grpcio==1.62.0
-grpcio-tools==1.62.0
+# e depois atualize os numeros abaixo para o que foi instalado de fato -
+# reproducibilidade (REQ-05) exige que este arquivo reflita a versao real
+# usada no experimento, nao uma versao antiga que nao instala mais.
+grpcio==1.81.1
+grpcio-tools==1.81.1
