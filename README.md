@@ -7,6 +7,35 @@
 
 ---
 
+## Em termos simples
+
+Imagine um caminhão, ônibus ou viatura de emergência mandando continuamente, pela
+internet do celular, dados do próprio veículo (velocidade, temperatura do motor,
+localização) para uma central. Existem duas formas comuns de "empacotar" e enviar
+esse tipo de dado entre computadores: uma mais antiga e universal (**REST/JSON** — a
+mesma base por trás da maioria dos sites) e uma mais nova e compacta (**gRPC** — usada
+por empresas como o Google).
+
+Este projeto testa, num computador pequeno e barato de verdade (**Raspberry Pi**, do
+tipo usado em equipamentos embarcados reais — não é simulação em nuvem nem em notebook
+potente), qual das duas formas funciona melhor quando:
+
+- **a internet do carro está ruim** (sinal de celular instável, como numa rodovia);
+- **é preciso adicionar segurança** para garantir que ninguém finja ser o carro nem
+  leia os dados em trânsito (isso se chama **mTLS** — uma trava que exige que os dois
+  lados, veículo e central, se identifiquem com um "documento" digital antes de
+  conversar);
+- **alguém tenta atacar o sistema de propósito**, mandando dados malformados pra ver
+  qual dos dois jeitos aguenta mais sem travar ou consumir toda a memória do
+  computador de bordo.
+
+O teste roda em duas máquinas de verdade ligadas por cabo: o Raspberry Pi faz o papel
+do computador de bordo do veículo, e um notebook simula a central que recebe os
+dados. O resultado é um conjunto de números medidos no hardware real (não estimados)
+que ajuda a responder qual tecnologia é mais indicada para esse tipo de sistema
+crítico. As seções técnicas abaixo (Contexto, Perguntas de pesquisa) são a versão
+formal desse mesmo objetivo, para quem já conhece os termos.
+
 ## Contexto
 
 Frotas de veículos comerciais e de emergência dependem de *gateways* embarcados para transmitir telemetria crítica (OBD-II/CAN) por redes móveis sujeitas a instabilidade. Nesses dispositivos — ARM de baixo consumo, RAM limitada, sem refrigeração ativa — a escolha do protocolo de comunicação impacta diretamente o desempenho, o consumo de recursos, o custo criptográfico da autenticação mútua (mTLS) e a superfície de ataque na camada de aplicação (L7).

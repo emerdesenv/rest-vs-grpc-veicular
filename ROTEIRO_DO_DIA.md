@@ -1,5 +1,11 @@
 # Roteiro do dia de teste
 
+**O que estamos testando hoje, em uma frase:** vamos rodar, num Raspberry Pi de
+verdade fazendo o papel de computador de bordo, os dois jeitos de mandar dado do
+carro (REST e gRPC — ver "Em termos simples" no README) e cronometrar qual é mais
+rápido — ainda sem nenhuma camada de segurança extra, só pra confirmar que o
+"encanamento" básico funciona de ponta a ponta.
+
 Sequência única da sessão, na ordem. A ideia é fechar a **base** com folga e
 avançar só até onde der sem atropelar. Print/foto a cada passo que funciona.
 
