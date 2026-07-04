@@ -1,5 +1,11 @@
 # Etapa 1 (esqueleto). gRPC, scipy e locust entram nas proximas etapas.
+#
+# Hypercorn (nao uvicorn): suporta HTTP/2 de verdade no servidor, necessario
+# para a paridade de transporte com o gRPC (Secao 2.2 do artigo). h2 e o
+# parser HTTP/2 usado tanto pelo Hypercorn (servidor) quanto pelo httpx
+# (cliente) - ver ressalva sobre TLS/h2c em servers/rest_server.py.
 fastapi==0.111.0
-uvicorn==0.30.0
+hypercorn==0.17.3
+h2==4.1.0
 httpx==0.27.0
 psutil==5.9.8

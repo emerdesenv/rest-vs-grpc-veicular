@@ -109,7 +109,12 @@ E cria a pasta `pki/` com seis arquivos. O que é cada um:
 ---
 
 ## Depois de fazer as duas partes
-- Substitua `data/exemplo_telemetria.csv` pelo `telemetria_real.csv` (ou aponte
-  os scripts para o arquivo novo).
+- Aponte os clientes para o CSV real passando o caminho como segundo
+  argumento (não precisa editar o código):
+
+      python3 cliente_carga.py 192.168.50.1 ../data/telemetria_real.csv
+      python3 cliente_grpc.py 192.168.50.1 ../data/telemetria_real.csv
+
+  Sem esse argumento, os dois continuam usando `data/exemplo_telemetria.csv`.
 - Guarde a pasta `pki/` nas máquinas certas; ela será usada quando o
   experimento chegar na Etapa 3 (segurança).
