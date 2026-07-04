@@ -23,9 +23,13 @@ openssl req -x509 -newkey rsa:2048 -sha256 -days 3650 -nodes \
 echo ">> [2/3] Gerando o certificado do SERVIDOR (Raspberry Pi, IP $IP_SERVIDOR)..."
 openssl req -newkey rsa:2048 -sha256 -nodes \
   -keyout server.key -out server.csr -subj "/CN=gateway-server"
+# Arquivo temporario em vez de "process substitution" (<(...)) - a sintaxe
+# <(...) nao funciona de forma confiavel no Git Bash/MSYS no Windows; um
+# arquivo temporario funciona igual em Linux, Mac e Windows.
+printf "subjectAltName=IP:%s" "$IP_SERVIDOR" > server_ext.cnf
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
-  -days 365 -sha256 -out server.crt \
-  -extfile <(printf "subjectAltName=IP:%s" "$IP_SERVIDOR")
+  -days 365 -sha256 -out server.crt -extfile server_ext.cnf
+rm -f server_ext.cnf
 
 echo ">> [3/3] Gerando o certificado do CLIENTE (notebook)..."
 openssl req -newkey rsa:2048 -sha256 -nodes \
