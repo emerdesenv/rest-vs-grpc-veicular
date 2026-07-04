@@ -8,11 +8,14 @@
 pki/
 
 # Saidas transitorias de teste
-latencias_etapa1.csv
-latencias_grpc_etapa2.csv
+# (latencias_etapaN[_seguranca][_rede].csv - o --rede em cliente_carga.py/
+# cliente_grpc.py soma sufixo _3g/_4g/_lte a qualquer uma dessas)
+latencias_etapa1*.csv
+latencias_grpc_etapa2*.csv
 latencias_etapa3_*.csv
 latencias_grpc_etapa3_*.csv
 handshake_*.csv
+ataque_*.csv
 recursos_pi.csv
 recursos_pi_grpc.csv
 recursos_pi_*.csv

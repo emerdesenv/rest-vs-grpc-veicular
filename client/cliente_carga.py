@@ -8,8 +8,11 @@ Executar (de qualquer diretorio):
     python3 cliente_carga.py 192.168.50.1 ../data/telemetria_real.csv
     python3 cliente_carga.py 192.168.50.1 --seguranca tls
     python3 cliente_carga.py 192.168.50.1 --seguranca mtls --pki ../pki-scripts/pki
+    python3 cliente_carga.py 192.168.50.1 --rede 3g
 (troque o IP pelo IP do Raspberry Pi; o 2o argumento posicional e opcional -
-caminho do CSV. Sem ele, usa data/exemplo_telemetria.csv por padrao.)
+caminho do CSV. Sem ele, usa data/exemplo_telemetria.csv por padrao. --rede
+so nomeia o arquivo de saida - o perfil de rede em si e aplicado no Pi via
+netem/aplicar_perfil.sh, antes de rodar este cliente.)
 """
 import argparse
 import csv
@@ -67,6 +70,12 @@ def main():
     parser.add_argument("csv_path", nargs="?", default=None, help="Caminho do CSV de telemetria")
     parser.add_argument("--seguranca", choices=["none", "tls", "mtls"], default="none")
     parser.add_argument("--pki", default=None, help="Pasta com os certificados")
+    parser.add_argument(
+        "--rede", choices=["direto", "3g", "4g", "lte"], default="direto",
+        help="So para nomear o arquivo de saida - nao aplica o perfil (isso e feito no "
+             "Pi via netem/aplicar_perfil.sh). Use pra identificar sob qual perfil de "
+             "rede este resultado foi coletado, evitando sobrescrever outro sem querer.",
+    )
     args = parser.parse_args()
 
     arquivo_csv = args.csv_path or str(_PADRAO_CSV)
@@ -91,7 +100,7 @@ def main():
         print("Gere a PKI primeiro: bash pki-scripts/gerar_pki.sh")
         return
 
-    print(f">> Enviando {N_REQUISICOES} requisicoes para {url} [seguranca={args.seguranca}]")
+    print(f">> Enviando {N_REQUISICOES} requisicoes para {url} [seguranca={args.seguranca}, rede={args.rede}]")
     latencias = []
     with cliente_ctx as cliente:
         for i in range(N_REQUISICOES):
@@ -125,6 +134,8 @@ def main():
     print(f"  media:         {statistics.mean(latencias):.2f} ms")
 
     nome_saida = NOME_SAIDA[args.seguranca]
+    if args.rede != "direto":
+        nome_saida = nome_saida.replace(".csv", f"_{args.rede}.csv")
     with open(nome_saida, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["indice", "latencia_ms"])

@@ -10,7 +10,10 @@ Executar (de qualquer diretorio):
     python3 cliente_grpc.py 192.168.50.1 ../data/telemetria_real.csv
     python3 cliente_grpc.py 192.168.50.1 --seguranca tls
     python3 cliente_grpc.py 192.168.50.1 --seguranca mtls --pki ../pki-scripts/pki
-(2o argumento posicional e opcional - caminho do CSV; sem ele usa exemplo_telemetria.csv)
+    python3 cliente_grpc.py 192.168.50.1 --rede 3g
+(2o argumento posicional e opcional - caminho do CSV; sem ele usa exemplo_telemetria.csv.
+--rede so nomeia o arquivo de saida - o perfil de rede em si e aplicado no Pi via
+netem/aplicar_perfil.sh, antes de rodar este cliente.)
 """
 import argparse
 import csv
@@ -72,6 +75,11 @@ def main():
     parser.add_argument("csv_path", nargs="?", default=None, help="Caminho do CSV de telemetria")
     parser.add_argument("--seguranca", choices=["none", "tls", "mtls"], default="none")
     parser.add_argument("--pki", default=None, help="Pasta com os certificados")
+    parser.add_argument(
+        "--rede", choices=["direto", "3g", "4g", "lte"], default="direto",
+        help="So para nomear o arquivo de saida - nao aplica o perfil (isso e feito no "
+             "Pi via netem/aplicar_perfil.sh).",
+    )
     args = parser.parse_args()
 
     arquivo_csv = args.csv_path or str(_PADRAO_CSV)
@@ -95,7 +103,7 @@ def main():
         print("Gere a PKI primeiro: bash pki-scripts/gerar_pki.sh")
         return
 
-    print(f">> Enviando {N_REQUISICOES} requisicoes gRPC para {args.ip}:50051 [seguranca={args.seguranca}]")
+    print(f">> Enviando {N_REQUISICOES} requisicoes gRPC para {args.ip}:50051 [seguranca={args.seguranca}, rede={args.rede}]")
     stub = telemetria_pb2_grpc.TelemetriaStub(canal)
     latencias = []
     for i in range(N_REQUISICOES):
@@ -132,6 +140,8 @@ def main():
     print(f"  P95: {latencias[int(len(latencias) * 0.95) - 1]:.2f} ms")
     print(f"  P99: {latencias[int(len(latencias) * 0.99) - 1]:.2f} ms")
     nome_saida = NOME_SAIDA[args.seguranca]
+    if args.rede != "direto":
+        nome_saida = nome_saida.replace(".csv", f"_{args.rede}.csv")
     with open(nome_saida, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["indice", "latencia_ms"])

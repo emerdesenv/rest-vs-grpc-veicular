@@ -56,8 +56,8 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 - [x] **Etapa 1 — Esqueleto** · REST + coleta de CPU/RAM ponta a ponta *(validado em hardware real)*
 - [x] **Etapa 2 — gRPC** · segundo protocolo, mesma telemetria em formato binário *(validado em hardware real)*
 - [x] **Etapa 3 — Segurança** · TLS e mTLS (com medição isolada do handshake — RQ2) *(validado em hardware real)*
-- [x] **Etapa 4 — Rede** · perfis 3G/4G/LTE via `tc netem` *(código pronto; validar no Pi)*
-- [ ] **Etapa 5 — Ataques L7** · JSON Bomb, pacote malformado e pior caso combinado (C3/C4/C5)
+- [x] **Etapa 4 — Rede** · perfis 3G/4G/LTE via `tc netem` *(validado em hardware real - 3G e 4G)*
+- [ ] **Etapa 5 — Ataques L7** · JSON Bomb, pacote malformado e pior caso combinado (C3/C4/C5) *(C3 validado em hardware real; C4 só localmente; C5 não iniciado)*
 - [ ] **Etapa 6 — Matriz** · orquestrador das combinações (protocolo × segurança × rede × payload), 5 rodadas
 - [ ] **Etapa 7 — Estatística** · SciPy (Shapiro-Wilk · Mann-Whitney U · Bonferroni) e geração de tabelas/gráficos
 
