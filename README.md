@@ -35,20 +35,36 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 ## Estrutura do repositório
 
 ```
-├── servers/        # servidor REST (servidor gRPC entra na Etapa 2)
-│   └── rest_server.py
-├── client/         # cliente de carga / gerador de requisições
-│   └── cliente_carga.py
-├── metrics/        # coleta de CPU e RAM no gateway (Raspberry Pi)
+├── servers/                  # servidores REST e gRPC (rodam no Pi)
+│   ├── rest_server.py
+│   └── grpc_server.py
+├── client/                   # clientes de carga / geradores de requisições
+│   ├── cliente_carga.py      # REST
+│   └── cliente_grpc.py       # gRPC
+├── metrics/                  # coleta de CPU e RAM no gateway
 │   └── coletor_recursos.py
-├── data/           # telemetria de exemplo (dados reais entram na Etapa 1+)
-│   └── exemplo_telemetria.csv
-├── requirements.txt
+├── proto/                    # schema Protobuf + compilador
+│   ├── telemetria.proto
+│   └── compilar_proto.sh
+├── pki-scripts/              # geração da PKI para mTLS (sem certificados reais)
+│   └── gerar_pki.sh
+├── data/                     # telemetria de exemplo + coletor OBD-II
+│   ├── exemplo_telemetria.csv
+│   └── coletar_obd.py
+├── requirements.txt          # dependências da Etapa 1 (REST)
+├── requirements-etapa2.txt   # dependências da Etapa 2 (gRPC)
+├── ROTEIRO_DO_DIA.md         # roteiro da sessão de testes
+├── TUTORIAL_CSV_E_PKI.md     # como gerar o CSV real e a PKI
 ├── .gitignore
 └── README.md
 ```
 
-Pastas futuras: `proto/` (schemas Protobuf), `pki-scripts/` (geração da PKI — **sem** certificados reais), `netem/` (perfis de rede), `analise/` (estatística).
+Pastas futuras: `netem/` (perfis de rede), `analise/` (estatística).
+
+## Documentação
+
+- **`ROTEIRO_DO_DIA.md`** — sequência completa da sessão de testes, passo a passo.
+- **`TUTORIAL_CSV_E_PKI.md`** — como gerar o CSV de telemetria real (OBD-II) e a PKI do mTLS.
 
 ## Como executar (Etapa 1)
 
@@ -75,7 +91,3 @@ Universidade do Estado de Santa Catarina (UDESC) — Joinville/SC, Brasil.
 ## Uso de IA
 
 Ferramentas de IA (Claude, Anthropic) foram utilizadas em apoio à revisão crítica, estruturação e refinamento de texto e código. Todas as decisões de conteúdo, escolhas metodológicas e o código foram revisados e validados pelos autores. Nenhuma ferramenta de IA foi usada para gerar dados experimentais ou referências bibliográficas.
-
-## Licença
-
-A definir.
