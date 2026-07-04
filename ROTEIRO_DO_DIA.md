@@ -9,6 +9,31 @@ avançar só até onde der sem atropelar. Print/foto a cada passo que funciona.
 
 ---
 
+## Guia rápido: o que rodar, onde e quando
+
+Tabela de relance. Os detalhes de cada passo estão nas seções abaixo.
+
+| O que rodar               | Em qual máquina    | Quando                              |
+|---------------------------|--------------------|-------------------------------------|
+| `gerar_pki.sh`            | qualquer uma       | a qualquer momento (independe)      |
+| `coletar_obd.py`          | a que tem o OBD-II | uma vez (talvez já feito)           |
+| `coletor_recursos.py`     | **Raspberry Pi**   | Etapa 1 — abrir **1º**              |
+| `rest_server.py`          | **Raspberry Pi**   | Etapa 1 — abrir **2º**              |
+| `cliente_carga.py`        | **notebook**       | Etapa 1 — rodar **3º**              |
+| `compilar_proto.sh`       | Pi e notebook      | Etapa 2 — só **após** a Etapa 1     |
+| `grpc_server.py`          | **Raspberry Pi**   | Etapa 2                             |
+| `cliente_grpc.py`         | **notebook**       | Etapa 2                             |
+
+**Duas regras que não podem quebrar:**
+1. **A ordem importa** — nunca rode a Etapa 2 antes da Etapa 1 passar.
+2. **A máquina importa** — servidor e coletor sempre no **Pi** (é o hardware que
+   queremos medir); cliente sempre no **notebook**. Trocar isso invalida os números.
+
+> Antes de tudo: o repositório precisa estar **baixado nas duas máquinas**
+> (Pi e notebook), senão os scripts não têm o que rodar.
+
+---
+
 ## 0. Preparar o ambiente (~20-40 min)
 Faça isto ANTES de qualquer teste. O `pip install` é o passo mais lento —
 deixe rodando enquanto configura o cabo.
