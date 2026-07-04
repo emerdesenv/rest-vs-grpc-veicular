@@ -39,10 +39,37 @@ Faça isto ANTES de qualquer teste. O `pip install` é o passo mais lento —
 deixe rodando enquanto configura o cabo.
 
 - [ ] Pi em **modo console** (não no desktop gráfico).
+- [ ] **Repositório baixado nas duas máquinas** (ver "Como baixar o repositório" abaixo).
 - [ ] Cabo Ethernet ligando Pi ↔ notebook.
 - [ ] IPs fixos: Pi `192.168.50.1`, notebook `192.168.50.2` (comandos no README).
 - [ ] `ping 192.168.50.1` do notebook responde. **← só siga se isto funcionar.**
 - [ ] `pip install -r requirements.txt` nas duas máquinas.
+
+### Como baixar o repositório
+
+**No Raspberry Pi** (precisa de internet — o WiFi dele serve; o cabo é só para o experimento).
+Quatro comandos:
+
+    wget https://github.com/emerdesenv/rest-vs-grpc-veicular/archive/refs/heads/main.zip
+    unzip main.zip
+    cd rest-vs-grpc-veicular-main
+    ls
+
+O `ls` deve listar as pastas (`servers`, `client`, `data`...). É de dentro dessa
+pasta (com sufixo `-main`, normal do GitHub) que todos os comandos são rodados.
+
+- Se disser que `unzip` não existe:  `sudo apt install unzip -y` e repita o `unzip`.
+- Se o `wget` der erro 404:  troque `main` por `master` no link.
+
+**No notebook** (tem navegador): abrir o repositório → botão verde **Code → Download ZIP** → descompactar com dois cliques.
+
+**Plano B (sem internet no Pi):** baixar o ZIP no notebook, passar por **pendrive**
+para o Pi e descompactar lá. Zero git, zero comando de rede.
+
+> Baixar o ZIP dá uma cópia "solta" (desconectada do GitHub), o que é perfeito
+> para só **executar** hoje. Publicar resultados de volta no repositório é outra
+> etapa, com git, para depois dos testes.
+
 
 ## 1. Etapa 1 — validar a encanação (REST) (~30-60 min)
 Três terminais, na ordem do README: coletor (Pi) → servidor (Pi) → cliente (notebook).
