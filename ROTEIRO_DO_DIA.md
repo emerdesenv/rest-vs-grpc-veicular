@@ -101,8 +101,15 @@ Não precisa de carro nem de rede montada; dá pra fazer a qualquer momento.
 ## 4. (Bônus) Etapa 2 — gRPC — só se a Etapa 1 passou
 - [ ] `pip install -r requirements-etapa2.txt` (no Pi pode demorar — ver aviso no arquivo).
 - [ ] `bash proto/compilar_proto.sh` (gera os módulos nas pastas certas).
+- [ ] Rodar de novo o coletor de recursos no Pi, **com nome de arquivo diferente**
+      pra não sobrescrever o da Etapa 1:
+      `nice -n 10 python3 metrics/coletor_recursos.py recursos_pi_grpc.csv`
 - [ ] Rodar `grpc_server.py` (Pi) e `cliente_grpc.py` (notebook).
 - [ ] Se sair um P50/P95/P99: **ambos os protocolos validados no hardware.** 🎉
+
+> Vale o esforço extra do coletor aqui: sem isso, vocês saem hoje com CPU/RAM
+> só do REST, e a comparação de recursos entre os dois protocolos (um dos
+> pontos centrais do artigo) fica sem dado de um dos dois lados.
 
 ## 5. Subir no GitHub
 - [ ] `.gitignore` PRIMEIRO (garante que nenhuma chave suba).
@@ -111,10 +118,17 @@ Não precisa de carro nem de rede montada; dá pra fazer a qualquer momento.
 
 ## 6. Evidências para a apresentação de segunda
 Junte num só lugar:
-- [ ] `latencias_etapa1.csv` e `recursos_pi.csv` (números reais do Pi).
+- [ ] `latencias_etapa1.csv` e `recursos_pi.csv` (ou `recursos_pi_rest.csv`) —
+      números reais do Pi na Etapa 1.
 - [ ] `telemetria_real.csv` (prova da coleta OBD real).
+- [ ] Pasta `pki/` gerada com os dois "OK" (print da tela do `gerar_pki.sh`) —
+      mostra que a segurança já está scriptada, mesmo sem estar ligada ainda.
 - [ ] Fotos/prints de cada passo que funcionou.
-- [ ] (Se fez a Etapa 2) `latencias_grpc_etapa2.csv`.
+- [ ] (Se fez a Etapa 2) `latencias_grpc_etapa2.csv` e `recursos_pi_grpc.csv`.
+
+> Nenhum desses itens depende de ter rodado ataque L7 (JSON Bomb) hoje — isso é
+> Etapa 5 do roadmap, planejada e descrita no artigo, não prometida como
+> resultado já executado nesta fase.
 
 > À noite, mande os CSVs de saída que eu transformo em gráficos apresentáveis
 > (latência por percentil, CPU/RAM no tempo) para o slide de viabilidade.

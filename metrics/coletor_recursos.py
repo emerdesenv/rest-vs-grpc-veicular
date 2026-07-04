@@ -7,14 +7,21 @@ Parar com Ctrl+C -> ele fecha o arquivo automaticamente.
 
 (O 'nice -n 10' deixa o coletor com prioridade mais baixa, para ele
  interferir o minimo possivel na medicao do servidor.)
+
+IMPORTANTE se for rodar mais de uma vez no mesmo dia (ex.: uma vez para a
+Etapa 1/REST, outra para a Etapa 2/gRPC): passe um nome de arquivo diferente
+como argumento, senao a segunda rodada SOBRESCREVE a primeira em silencio.
+    nice -n 10 python3 coletor_recursos.py recursos_pi_rest.csv
+    nice -n 10 python3 coletor_recursos.py recursos_pi_grpc.csv
 """
+import sys
 import psutil
 import time
 import csv
 from datetime import datetime
 
 INTERVALO = 0.5  # segundos entre amostras
-ARQUIVO = "recursos_pi.csv"
+ARQUIVO = sys.argv[1] if len(sys.argv) > 1 else "recursos_pi.csv"
 
 
 def main():
