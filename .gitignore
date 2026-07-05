@@ -7,19 +7,24 @@
 *.srl
 pki/
 
-# Saidas transitorias de teste
+# Saidas transitorias de teste - a evidencia organizada e versionada fica em
+# resultados/etapaN/ (nao ignorada); estes padroes so protegem contra um CSV
+# solto na raiz por esquecimento de mover. O "/" no inicio ancora a regra na
+# raiz do repo - sem ele, o gitignore bloquearia o mesmo nome de arquivo em
+# qualquer profundidade, inclusive dentro de resultados/, que e o oposto do
+# que queremos.
 # (latencias_etapaN[_seguranca][_rede].csv - o --rede em cliente_carga.py/
 # cliente_grpc.py soma sufixo _3g/_4g/_lte a qualquer uma dessas)
-latencias_etapa1*.csv
-latencias_grpc_etapa2*.csv
-latencias_etapa3_*.csv
-latencias_grpc_etapa3_*.csv
-handshake_*.csv
-ataque_*.csv
-recursos_pi.csv
-recursos_pi_grpc.csv
-recursos_pi_*.csv
-resultados/
+/latencias_etapa1*.csv
+/latencias_grpc_etapa2*.csv
+/latencias_etapa3_*.csv
+/latencias_grpc_etapa3_*.csv
+/handshake_*.csv
+/ataque_*.csv
+/recursos_pi.csv
+/recursos_pi_grpc.csv
+/recursos_pi_*.csv
+/supervisor_eventos.csv
 
 # Python
 __pycache__/

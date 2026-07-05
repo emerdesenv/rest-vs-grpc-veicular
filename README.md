@@ -2,7 +2,7 @@
 
 > Estudo experimental comparativo entre **REST/JSON** e **gRPC/Protocol Buffers**, sob três níveis de segurança de transporte (**sem TLS · TLS · mTLS**) e conectividade móvel instável, executado em hardware embarcado real — **Raspberry Pi 3B (1 GB RAM)**.
 
-**Status:** proposta de pesquisa · fase experimental inicial (Etapa 1)
+**Status:** proposta de pesquisa · Etapas 1-5 validadas em hardware real (ver [Resultados](#resultados))
 **Contexto:** proposta de artigo — disciplina TESC-NCS 2026/1
 
 ---
@@ -57,7 +57,7 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 - [x] **Etapa 2 — gRPC** · segundo protocolo, mesma telemetria em formato binário *(validado em hardware real)*
 - [x] **Etapa 3 — Segurança** · TLS e mTLS (com medição isolada do handshake — RQ2) *(validado em hardware real)*
 - [x] **Etapa 4 — Rede** · perfis 3G/4G/LTE via `tc netem` *(validado em hardware real - 3G e 4G)*
-- [ ] **Etapa 5 — Ataques L7** · JSON Bomb, pacote malformado e pior caso combinado (C3/C4/C5) *(C3 validado em hardware real; C4 só localmente; C5 não iniciado)*
+- [x] **Etapa 5 — Ataques L7** · JSON Bomb, pacote malformado e pior caso combinado (C3/C4/C5) *(validado em hardware real, condição oficial mTLS+3G)*
 - [ ] **Etapa 6 — Matriz** · orquestrador das combinações (protocolo × segurança × rede × payload), 5 rodadas
 - [ ] **Etapa 7 — Estatística** · SciPy (Shapiro-Wilk · Mann-Whitney U · Bonferroni) e geração de tabelas/gráficos
 
@@ -65,13 +65,16 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 
 ```
 ├── servers/                  # servidores REST e gRPC (rodam no Pi)
-│   ├── rest_server.py
-│   └── grpc_server.py
-├── client/                   # clientes de carga / geradores de requisições
+│   ├── rest_server.py        # Etapa 1/3 - suporta --seguranca none/tls/mtls
+│   └── grpc_server.py        # Etapa 2/3 - idem
+├── client/                   # clientes de carga / atacante
 │   ├── cliente_carga.py      # REST
-│   └── cliente_grpc.py       # gRPC
-├── metrics/                  # coleta de CPU e RAM no gateway
-│   └── coletor_recursos.py
+│   ├── cliente_grpc.py       # gRPC
+│   └── atacante_l7.py        # Etapa 5 - JSON Bomb / pacote malformado (C3/C4/C5)
+├── metrics/                  # coleta de CPU/RAM e supervisao do servidor no gateway
+│   ├── coletor_recursos.py
+│   ├── medir_handshake.py    # Etapa 3 - handshake TLS/mTLS isolado (RQ2)
+│   └── supervisor.sh         # Etapa 5 (C5) - reinicio automatico do servidor
 ├── proto/                    # schema Protobuf + compilador
 │   ├── telemetria.proto
 │   └── compilar_proto.sh
@@ -80,6 +83,10 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 ├── netem/                    # perfis de rede movel (3G/4G/LTE) via tc netem
 │   ├── aplicar_perfil.sh
 │   └── remover_perfil.sh
+├── resultados/                # evidencia real capturada em hardware (Etapas 1-5)
+│   ├── README.md              # indice ligando cada CSV a Etapa/cenario/RQ
+│   ├── etapa1_rest/  etapa2_grpc/  etapa3_seguranca/  etapa4_rede/  etapa5_ataques/
+│   └── exploratorio/          # trilha de debug, NAO e evidencia oficial (ver AVISO.md)
 ├── data/                     # telemetria de exemplo + coletor OBD-II
 │   ├── exemplo_telemetria.csv
 │   └── coletar_obd.py
@@ -91,12 +98,23 @@ O experimento é construído em fatias verificáveis — cada etapa valida uma v
 └── README.md
 ```
 
-Pasta futura: `analise/` (estatística).
+Pasta futura: `analise/` (estatística - Etapa 7).
 
 ## Documentação
 
 - **`ROTEIRO_DO_DIA.md`** — sequência completa da sessão de testes, passo a passo.
 - **`TUTORIAL_CSV_E_PKI.md`** — como gerar o CSV de telemetria real (OBD-II) e a PKI do mTLS.
+
+## Resultados
+
+Toda a evidência real capturada em hardware (Etapas 1-5) está em
+[`resultados/`](resultados/README.md), organizada por etapa, com um índice
+ligando cada arquivo ao cenário e à pergunta de pesquisa correspondente.
+Achados principais até agora:
+
+- **RQ1** — gRPC mais rápido que REST em todos os percentis, mesma rede, sem segurança.
+- **RQ2** — TLS custa ~+3.3ms de latência sobre o baseline no REST; mTLS não soma overhead perceptível além do TLS unilateral (nem na requisição, nem no handshake isolado). gRPC quase não varia entre os três níveis de segurança.
+- **RQ3** — JSON Bomb (profundidade 100) não estressa CPU/RAM do REST, mesmo sob mTLS+3G; payload malformado é rejeitado (HTTP 500) sem derrubar o serviço; gRPC rejeita os dois ataques rapidamente. O cenário combinado (C5) não mostrou efeito de amplificação.
 
 ## Como executar (Etapa 1)
 
@@ -107,11 +125,11 @@ Topologia: **Raspberry Pi = servidor**, **notebook = cliente**, ligados por cabo
 3. No Pi: coletor (`nice -n 10 python3 metrics/coletor_recursos.py`) e servidor (`python3 servers/rest_server.py`).
 4. No notebook: `python3 client/cliente_carga.py <IP_DO_PI>`.
 
-**Critério de sucesso:** saída de `latencias_etapa1.csv` (percentis) e `recursos_pi.csv` (CPU/RAM). Instruções detalhadas nos comentários de cada script.
+**Critério de sucesso:** saída de `latencias_etapa1.csv` (percentis) e `recursos_pi.csv` (CPU/RAM) — mova para `resultados/etapa1_rest/` para manter a organização (ver exemplos já capturados lá). Instruções detalhadas nos comentários de cada script.
 
 ## Reprodutibilidade
 
-Este projeto adota reprodutibilidade como requisito (REQ-05): código, *schemas* e dados brutos ficam disponíveis publicamente. Certificados e chaves privadas **nunca** são versionados (ver `.gitignore`). O dataset final de telemetria será disponibilizado em repositório de dados aberto (Zenodo) na fase de resultados.
+Este projeto adota reprodutibilidade como requisito (REQ-05): código, *schemas* e dados brutos ficam disponíveis publicamente neste repositório (pasta [`resultados/`](resultados/README.md)), organizados por etapa. Certificados e chaves privadas **nunca** são versionados (ver `.gitignore`). Um dataset final consolidado (todas as rodadas da Etapa 6, quando existir) será disponibilizado também em repositório de dados aberto (Zenodo) na fase de publicação do artigo.
 
 ## Autores
 
